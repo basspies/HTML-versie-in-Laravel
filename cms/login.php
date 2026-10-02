@@ -1,3 +1,37 @@
+<?php
+include 'conn.php';
+include 'auth.php';
+
+if (isIngelogd()) {
+  header('Location: ../index.php');
+  exit;
+}
+
+$fout = '';
+$email = '';
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+  $email = trim($_POST['email'] ?? '');
+  $wachtwoord = $_POST['wachtwoord'] ?? '';
+
+  if ($email === '' || $wachtwoord === '') {
+    $fout = 'Vul je e-mailadres en wachtwoord in.';
+  } else {
+    $stmt = $conn->prepare('SELECT * FROM users WHERE email = :email');
+    $stmt->execute(['email' => $email]);
+    $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if ($user && password_verify($wachtwoord, $user['wachtwoord'])) {
+      session_regenerate_id(true);
+      $_SESSION['user_id'] = $user['id'];
+      $_SESSION['naam'] = $user['naam'];
+      header('Location: ../index.php');
+      exit;
+    }
+    $fout = 'Onjuist e-mailadres of wachtwoord.';
+  }
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -12,38 +46,43 @@
     />
   </head>
   <body class="d-flex align-items-center py-4 bg-body-tertiary">
-    <main class="form-signin w-25 m-auto">
-      <form>
+    <main class="form-signin m-auto" style="max-width: 360px; width: 100%;">
+      <form method="POST" action="">
         <h1 class="h3 mb-3 fw-normal">Please sign in</h1>
+
+        <?php if ($fout): ?>
+          <div class="alert alert-danger"><?= e($fout) ?></div>
+        <?php endif; ?>
 
         <div class="form-floating">
           <input
             type="email"
+            name="email"
             class="form-control"
             id="floatingInput"
             placeholder="name@example.com"
+            value="<?= e($email) ?>"
+            required
           />
           <label for="floatingInput">Email address</label>
         </div>
         <div class="form-floating">
           <input
             type="password"
+            name="wachtwoord"
             class="form-control"
             id="floatingPassword"
             placeholder="Password"
+            required
           />
           <label for="floatingPassword">Password</label>
         </div>
 
-        <button class="btn btn-primary w-100 py-2" type="submit">
+        <button class="btn btn-primary w-100 py-2 mt-2" type="submit">
           Sign in
         </button>
+        <a href="../index.php" class="btn btn-link w-100 mt-2">Terug naar overzicht</a>
       </form>
     </main>
-    <script
-      src="/docs/5.3/dist/js/bootstrap.bundle.min.js"
-      integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
-      crossorigin="anonymous"
-    ></script>
   </body>
 </html>

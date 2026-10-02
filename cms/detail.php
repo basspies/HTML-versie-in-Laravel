@@ -31,8 +31,11 @@ if ($id !== false && $id !== null) {
             <div class="project card shadow-sm card-body m-2">
               <div class="card-text">
                 <h2><?= htmlspecialchars((string) ($project['titel'] ?? 'Project'), ENT_QUOTES, 'UTF-8') ?></h2>
+                <?php if (!empty($project['afbeelding'])): ?>
+                  <img src="../uploads/<?= htmlspecialchars($project['afbeelding'], ENT_QUOTES, 'UTF-8') ?>" alt="<?= htmlspecialchars((string) $project['titel'], ENT_QUOTES, 'UTF-8') ?>" class="img-fluid rounded mb-3" style="max-height: 400px;">
+                <?php endif; ?>
                 <?php foreach ($project as $field => $value): ?>
-                  <?php if (!in_array(strtolower((string) $field), ['titel', 'id'], true)): ?>
+                  <?php if (!in_array(strtolower((string) $field), ['titel', 'id', 'afbeelding'], true)): ?>
                     <div>
                       <strong><?= htmlspecialchars(ucfirst(str_replace('_', ' ', $field)), ENT_QUOTES, 'UTF-8') ?>:</strong>
                       <?= htmlspecialchars((string) ($value ?? ''), ENT_QUOTES, 'UTF-8') ?>
